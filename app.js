@@ -16,6 +16,12 @@ mongodb.MongoClient.connect(url, {
 }).then((client) => {
     console.log('DB Connected!');
     dbConn = client.db();
+    //delete 'bikeRoutes' collection if exists
+    dbConn.dropCollection("bikeRoutes", function(err, delOK) {
+        if (err) console.error(err);
+        if (delOK) console.log("Collection deleted");
+        
+      });
 }).catch(err => {
     console.log("DB Connection Error: ${err.message}");
 });
@@ -34,7 +40,8 @@ csvtojson().fromFile(fileName).then(source => {
              distance: source[i]["Covered distance (m)"],
              duration: source[i]["Duration (sec)"]
          };
-         arrayToInsert.push(oneRow);
+         //Only add data with distance over 10m and duration over 10 sec
+         if(oneRow.distance > 10 && oneRow.duration > 10) arrayToInsert.push(oneRow);
      }
      //inserting into the table "bikeRoutes"
      var collectionName = 'bikeRoutes';
