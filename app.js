@@ -134,7 +134,8 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     
                 }
                 try {
-                    res.send(result);
+                    res.json(result);
+                    console.log("sent!");
                 } catch {
                     res.status(500).send()
                 }
@@ -148,4 +149,8 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         
     
         })
+
+        app.get("/api", (req, res) => {
+            res.json({ message: "Hello from server!" });
+          });
     
