@@ -44,7 +44,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             }
             if (delOK){ 
                 console.log("Collection deleted");
-                return res.send('Loading data '  + '..');
+                //return res.send('Loading data '  + '..');
                 
             }
             
@@ -61,6 +61,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         try {
             await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
             var fileName =  options.outputPath;
+            console.log("merge Complete!")
         } catch {
             res.status(500).send()
         }
@@ -69,7 +70,15 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         
         try {
             var arrayToInsert = [];
-            csvtojson().fromFile(fileName).then(source => {
+            console.log("123")
+            var collectionName = 'bikeRoutes';
+            var collection = await dbConn.collection(collectionName);
+
+            /*
+            await csvtojson().fromFile("2021-05.csv").then(source => {
+                console.log("321")
+                
+                console.log(source[0])
                 // Fetching the all data from each row
                 for (var i = 0; i < source.length; i++) {
                     var oneRow = {
@@ -83,15 +92,48 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                         duration: source[i]["Duration (sec)"]
                     };
                     //Only add data with distance over 10m and duration over 10 sec 
-                    if(oneRow.distance > 10 && oneRow.duration > 10) arrayToInsert.push(oneRow);
+                    arrayToInsert.push(oneRow);
                 }
+                console.log(arrayToInsert[0])
+
                 
-                //inserting into the table "bikeRoutes"
-                var collectionName = 'bikeRoutes';
-                var collection = dbConn.collection(collectionName);
+                
             
-                
-                collection.insertMany(arrayToInsert, (err, result) => {
+    
+                  
+                });
+                */
+
+
+                await csvtojson()
+                .fromFile("testi.csv")
+                .then((jsonObj)=>{
+
+                    console.log(jsonObj[0]);
+
+                    for (var i = 0; i < jsonObj.length; i++) {
+                        /*
+                        var oneRow = {
+                            departure: jsonObj[i]["Departure"],
+                            return: jsonObj[i]["Return"],
+                            depStatID: jsonObj[i]["Departure station id"],
+                            retStatName: jsonObj[i]["Return station name"],
+                            retStatID: jsonObj[i]["Return station id"],
+                            depStatName: jsonObj[i]["Departure station name"],
+                            distance: jsonObj[i]["Covered distance (m)"],
+                            duration: jsonObj[i]["Duration (sec.)"]
+                        };
+                        */
+
+                        //Only add data with distance over 10m and duration over 10 sec 
+                        arrayToInsert.push(jsonObj[i]);
+                    }
+                    console.log(arrayToInsert[0])
+
+                })
+
+                //inserting into the table "bikeRoutes"
+                 collection.insertMany(arrayToInsert, (err, result) => {
                     if (err) {
                         console.log(err);
                         //return res.sendStatus(500);
@@ -103,8 +145,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                         
                         
                     }
-                });   
-                });
+                }); 
             } catch {
                 res.status(500).send()
             }
@@ -127,8 +168,11 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                 return res.json(response)
           }
 
-            var query =  { "return": {$in:[new RegExp(month)]} };
-            await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).limit(size).toArray(function(err, result) {
+            var query =  { "Departure": {$in:[new RegExp(month)]} };
+            var sorting = { "Departure": 1};
+            console.log(query);
+
+            await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
                     
