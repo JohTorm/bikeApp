@@ -11,7 +11,7 @@ const csvMerger = require('csv-merger');
 
 
 
-var mongoUrl = "mongodb://localhost:27017/SampleDb";
+var mongoUrl = "mongodb://localhost:27017/db";
 
 var dbConn;
 
@@ -28,40 +28,27 @@ mongodb.MongoClient.connect(mongoUrl, {
     dbConn = client.db();
     
     
-    
 }).catch(err => {
     console.log("DB Connection Error: ${err.message}");
 });
 
 app.get('/bikeRoutes/load', async (req, res, next) => {
-    try {
-        //delete 'bikeRoutes' collection if exists
-        dbConn.dropCollection("bikeRoutes", function(err, delOK) {
-            if (err) {
-                console.log(err);
-                return res.sendStatus(500);
-                
-            }
-            if (delOK){ 
-                console.log("Collection deleted");
-                //return res.send('Loading data '  + '..');
-                
-            }
-            
-          });
-        
-        } catch {
-            res.status(500).send()
-        }
+    
 
         options = {
             outputPath: "testi.csv", // string: path to the output CSV file
             writeOutput: true, // boolean: if true, the output will be written to a file, otherwise will be returned by the function 
         }
         try {
+            
+
             await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
+            
+
             var fileName =  options.outputPath;
             console.log("merge Complete!")
+            
+
         } catch {
             res.status(500).send()
         }
@@ -71,6 +58,37 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         try {
             var arrayToInsert = [];
             console.log("123")
+
+            dbConn.listCollections().toArray(function(err, items) {
+                items.forEach(element => {
+                    if(element.name == 'bikeRoutes') 
+                    { 
+                        try {
+                            //delete 'bikeRoutes' collection if exists
+                            dbConn.dropCollection("bikeRoutes", function(err, delOK) {
+                                if (err) {
+                                    console.log(err);
+                                    
+                                    
+                                }
+                                if (delOK){ 
+                                    console.log("Collection deleted");
+                                    
+                                    
+
+                                    
+                                }
+                                
+                              });
+                            
+                            } catch {
+                                res.status(500).send()
+                            }
+                    }
+                })
+          });    
+
+
             var collectionName = 'bikeRoutes';
             var collection = await dbConn.collection(collectionName);
 
@@ -106,13 +124,13 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
 
 
                 await csvtojson()
-                .fromFile("testi.csv")
+                .fromFile(fileName)
                 .then((jsonObj)=>{
 
-                    console.log(jsonObj[0]);
+                    console.log(jsonObj[0]["Covered distance (m)"]);
 
                     for (var i = 0; i < jsonObj.length; i++) {
-                        /*
+                        
                         var oneRow = {
                             departure: jsonObj[i]["Departure"],
                             return: jsonObj[i]["Return"],
@@ -121,12 +139,14 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                             retStatID: jsonObj[i]["Return station id"],
                             depStatName: jsonObj[i]["Departure station name"],
                             distance: jsonObj[i]["Covered distance (m)"],
-                            duration: jsonObj[i]["Duration (sec.)"]
+                            duration: jsonObj[i]["Duration (sec)"]
                         };
-                        */
+                        
 
-                        //Only add data with distance over 10m and duration over 10 sec 
-                        arrayToInsert.push(jsonObj[i]);
+                        //Only add data with distance over 10m and duration over 10 sec
+                        if(jsonObj[i]["Covered distance (m)"] > 9.5 && jsonObj[i]["Duration (sec)"] > 9.5) { 
+                            arrayToInsert.push(oneRow);
+                        }
                     }
                     console.log(arrayToInsert[0])
 
@@ -141,7 +161,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     }
                     if(result){
                         console.log("Import CSV into database successfully.");
-                        
+                        res.status(200).send();
                         
                         
                     }
@@ -169,6 +189,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
           }
 
             var query =  { "Departure": {$in:[new RegExp(month)]} };
+            
             var sorting = { "Departure": 1};
             console.log(query);
 
