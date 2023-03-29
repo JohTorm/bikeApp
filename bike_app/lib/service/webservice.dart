@@ -21,6 +21,22 @@ class Webservice {
     }
   }
 
+  getDataForTable(String month, String size, String pageNumber) async {
+    final response = await http.get(
+      Uri.parse('$ip/bikeRoutes/$month-$size-$pageNumber'),
+
+    );
+    if (response.statusCode == 200) {
+      //print(response.body);
+      return jsonDecode(response.body);
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      throw Exception('Failed to create album.');
+
+    }
+  }
+
 
 
 

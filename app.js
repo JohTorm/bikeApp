@@ -188,10 +188,10 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                 return res.json(response)
           }
 
-            var query =  { "Departure": {$in:[new RegExp(month)]} };
+            var query =  { "departure": {$in:[new RegExp(month)]} };
             
-            var sorting = { "Departure": 1};
-            console.log(query);
+            var sorting = { "departure": 1};
+            
 
             await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).toArray(function(err, result) {
                 if (err) {
@@ -200,7 +200,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                 }
                 try {
                     res.json(result);
-                    console.log("sent!");
+                    console.log("sent! " );
                 } catch {
                     res.status(500).send()
                 }

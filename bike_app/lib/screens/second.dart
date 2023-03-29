@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../model/datarow.dart';
 import '../model/view.abs.dart';
 
 
@@ -32,12 +33,20 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
   bool attend = false;
   List<bool> boolList = List.filled(99, true);
-  List events = [];
+  List<Datarow> events = <Datarow>[];
+
+  final List<Map<String, String>> listOfColumns = [
+    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
+    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
+    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
+  ];
+
 
   @override
   void initState() {
     super.initState();
     listenToRoutesSpecs(viewModel.routes);
+    viewModel.getTableData(context, "5", "20", "1");
 
 
 
@@ -61,8 +70,11 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
         final state = snapshot.data!;
         try{
+            events.addAll(state.datarows);
+            setState(() {});
         }
         catch (e){
+          print(e);
         }
 
 
@@ -70,15 +82,14 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
         return MaterialApp(
           home: DefaultTabController(
-            length: 3,
+            length: 2,
             child: Scaffold(
 
               appBar: AppBar(
                 bottom: const TabBar(
                   tabs: [
                     Tab(icon: Icon(Icons.home)),
-                    Tab(icon: Icon(Icons.group)),
-                    Tab(icon: Icon(Icons.calendar_month)),
+                    Tab(icon: Icon(Icons.group))
                   ],
                 ),
                 title: Text("""Hello ${state.loadOk}"""),
@@ -121,6 +132,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
                         }
                         else if(value == 1){
+                          await viewModel.getTableData(context, "5", "20", "1");
+                          events.addAll(state.datarows);
+                          print(state.datarows[0].id + "  jee");
                           print("Create new group menu is selected.");
                         }else if(value == 2){
                           print("Settings menu is selected.");
@@ -142,15 +156,46 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                   SingleChildScrollView(
                     child: ListBody(
                         children: <Widget>[
-                          Text('My upcoming events', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
-                          Container(),
+                          Text('Bike routes', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
+                          Container(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                            child:  DataTable(
+                              columns: [
+                                DataColumn(label: Text('Departure time')),
+                                DataColumn(label: Text('Return time')),
+                                DataColumn(label: Text('Departure station ID')),
+                                DataColumn(label: Text('Departure station name')),
+                                DataColumn(label: Text('Return station ID')),
+                                DataColumn(label: Text('Return station name')),
+                                DataColumn(label: Text('Distance')),
+                                DataColumn(label: Text('Duration'))
+                              ],
+                              rows:
+                              events.map(
+                                ((element) => DataRow(
+                                  cells: <DataCell>[
+                                    DataCell(Text(element.departure!)), //Extracting from Map element the value
+                                    DataCell(Text(element.returning!)),
+                                    DataCell(Text(element.depStatID!)),
+                                    DataCell(Text(element.depStatName!)),
+                                    DataCell(Text(element.retStatID!)),
+                                    DataCell(Text(element.retStatName!)),
+                                    DataCell(Text(element.distance!)),
+                                    DataCell(Text(element.duration!))
+                                  ],
+                                )),
+                              ).toList(),
+                            )
+                            )
+                          ),
                         ]
                     ),
                   ),
                   SingleChildScrollView(
                       child: ListBody(
                         children: <Widget>[
-                          Text('My groups', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
+                          Text('Station information', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
                           Container(),
 
                         ],

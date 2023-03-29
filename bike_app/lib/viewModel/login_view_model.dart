@@ -93,7 +93,7 @@ class LoginScreenViewModel extends ViewModel {
   void signup() {
     _routesSubject.add(
       AppRouteSpec(
-        name: '/signup',
+        name: '/second',
       ),
     );
 

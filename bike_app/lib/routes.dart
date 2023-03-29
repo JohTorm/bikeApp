@@ -23,18 +23,11 @@ class AppRouter {
           builder: (_) => LoginScreen(viewModel: LoginScreenViewModel()),
         );
       case '/second':
-        final loadOk = arguments['loadOk'] as bool?;
-        final email = arguments['email'] as String;
-
-        print(loadOk);
-        if (loadOk == null) {
-          throw Exception('Route ${settings.name} requires a user');
-        }
 
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => SecondPage(
-            viewModel: SecondPageViewModel(loadOk: loadOk, email: email),
+            viewModel: SecondPageViewModel(),
           ),
         );
 
