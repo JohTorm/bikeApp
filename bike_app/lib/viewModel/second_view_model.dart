@@ -20,13 +20,13 @@ import '../service/webservice.dart';
 
 class SecondPageState {
   final bool loadOk;
-  final String email;
-  final datarows;
+  final int count;
+  final  datarows;
 
 
   SecondPageState({
     this.loadOk = false,
-    this.email = '',
+    this.count = 0,
     this.datarows = List<Datarow>
 
 
@@ -35,13 +35,13 @@ class SecondPageState {
   SecondPageState copyWith({
     bool? loadOk,
     List<Datarow>? datarows,
-    String? email,
+    int? count,
 
   }) {
     return SecondPageState(
       loadOk: loadOk ?? this.loadOk,
       datarows: datarows ?? this.datarows,
-      email: email ?? this.email,
+      count: count ?? this.count,
 
     );
   }
@@ -55,8 +55,8 @@ class SecondPageViewModel extends ViewModel {
   final _routesSubject = PublishSubject<AppRouteSpec>();
   Stream<AppRouteSpec> get routes => _routesSubject;
 
-  SecondPageViewModel() {
-    _stateSubject.add(SecondPageState());
+  SecondPageViewModel({required int count}) {
+    _stateSubject.add(SecondPageState(count: count));
   }
   final List <String> groupNames = <String>[];
   List<bool> boolList = List.filled(99, true);
@@ -69,14 +69,11 @@ Future<void> getTableData(context,String month, String size, String pageNumber) 
   final data = await Webservice().getDataForTable(month,size,pageNumber);
 
   if (data.length > 0) {
-    print(data.length);
 
     datarow.clear();
     for(var i= 0; i<data.length; i++) {
-      print(data[i]);
       Datarow row = Datarow.fromJson(data[i]);
       datarow.add(row);
-      print(datarow[i].departure);
     }
 
     updateStateDatarows(datarow);
@@ -112,6 +109,7 @@ Future<void> getTableData(context,String month, String size, String pageNumber) 
       ),
     );
   }
+
 
 
   @override

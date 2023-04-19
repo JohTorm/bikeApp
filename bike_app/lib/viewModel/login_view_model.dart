@@ -40,8 +40,8 @@ class LoginScreenViewModel extends ViewModel {
   Future<void> login(context, String email, String pwd) async {
     final loadData = await Webservice().loadData();
 
-    if(loadData == 1) {
-      updateState(true);
+    if(loadData > 0) {
+      updateState(loadData);
 
 
       _routesSubject.add(
@@ -49,7 +49,7 @@ class LoginScreenViewModel extends ViewModel {
           name: '/second',
           arguments: {
             'loadOk': _stateSubject.value.loadOk,
-            'email': email
+            'count': loadData
           },
         ),
       );
@@ -94,6 +94,9 @@ class LoginScreenViewModel extends ViewModel {
     _routesSubject.add(
       AppRouteSpec(
         name: '/second',
+        arguments: {
+          'count': _stateSubject.value.count,
+        },
       ),
     );
 
@@ -101,11 +104,11 @@ class LoginScreenViewModel extends ViewModel {
 
 
 
-  void updateState(bool newLoadOk) {
+  void updateState(int newCount) {
     final state = _stateSubject.value;
     _stateSubject.add(
       state.copyWith(
-        loadOk: newLoadOk,
+        count: newCount,
       ),
     );
   }

@@ -21,7 +21,6 @@ class SecondPage extends View<SecondPageViewModel> {
 class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
   _SecondPageState(SecondPageViewModel viewModel) : super(viewModel);
 
-
   CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
       .toggledOff; // Can be toggled on/off by longpressing a date
@@ -32,6 +31,8 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
 
   bool attend = false;
+  int page = 1;
+  bool isButtonDisabled = false;
   List<bool> boolList = List.filled(99, true);
   List<Datarow> events = <Datarow>[];
 
@@ -46,8 +47,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
   void initState() {
     super.initState();
     listenToRoutesSpecs(viewModel.routes);
-    viewModel.getTableData(context, "5", "20", "1");
-
+    viewModel.getTableData(context, "5", "10", "1");
 
 
     _selectedDay = _focusedDay;
@@ -69,13 +69,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
         if (!snapshot.hasData) return Container();
 
         final state = snapshot.data!;
-        try{
-            events.addAll(state.datarows);
-            setState(() {});
-        }
-        catch (e){
-          print(e);
-        }
+        events.clear();
+        events.addAll(state.datarows);
+
 
 
 
@@ -92,7 +88,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                     Tab(icon: Icon(Icons.group))
                   ],
                 ),
-                title: Text("""Hello ${state.loadOk}"""),
+                title: Text("""Hello ${state.count}"""),
                 automaticallyImplyLeading: false,
                 actions: [
 
@@ -153,43 +149,95 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
               ),
               body: TabBarView(
                 children: [
-                  SingleChildScrollView(
+                SingleChildScrollView(
                     child: ListBody(
                         children: <Widget>[
-                          Text('Bike routes', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
-                          Container(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                            child:  DataTable(
-                              columns: [
-                                DataColumn(label: Text('Departure time')),
-                                DataColumn(label: Text('Return time')),
-                                DataColumn(label: Text('Departure station ID')),
-                                DataColumn(label: Text('Departure station name')),
-                                DataColumn(label: Text('Return station ID')),
-                                DataColumn(label: Text('Return station name')),
-                                DataColumn(label: Text('Distance')),
-                                DataColumn(label: Text('Duration'))
-                              ],
-                              rows:
-                              events.map(
-                                ((element) => DataRow(
-                                  cells: <DataCell>[
-                                    DataCell(Text(element.departure!)), //Extracting from Map element the value
-                                    DataCell(Text(element.returning!)),
-                                    DataCell(Text(element.depStatID!)),
-                                    DataCell(Text(element.depStatName!)),
-                                    DataCell(Text(element.retStatID!)),
-                                    DataCell(Text(element.retStatName!)),
-                                    DataCell(Text(element.distance!)),
-                                    DataCell(Text(element.duration!))
-                                  ],
-                                )),
-                              ).toList(),
-                            )
-                            )
-                          ),
+                          const Text('Bike Journeys', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
+                  Scrollbar(
+                      thumbVisibility: true, trackVisibility: true,//always show scrollbar
+                      thickness: 10, //width of scrollbar
+                      radius: Radius.circular(10), //corner radius of scrollbar
+                    interactive: true,
+                      scrollbarOrientation: ScrollbarOrientation.bottom,
+                      child:
+                      SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child:    DataTable(
+                        columns: [
+                          DataColumn(label: Text('Departure station name')),
+                          DataColumn(label: Text('Return station name')),
+                          DataColumn(label: Text('Distance')),
+                          DataColumn(label: Text('Duration'))
+                        ],
+                        rows:
+                        events.map(
+                          ((element) => DataRow(
+                            cells: <DataCell>[
+                              DataCell(Text(element.depStatName!)),
+                              DataCell(Text(element.retStatName!)),
+                              DataCell(Text(element.distance!)),
+                              DataCell(Text(element.duration!))
+                            ],
+                          )),
+                        ).toList(),
+                      )
+                    ),
+                  ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('1-10 of ${state.count}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              IconButton(
+                                  onPressed: () {
+                                    events.clear();
+                                    viewModel.getTableData(context, "5", "10", "1");
+                                    page = 1;
+                                    events.addAll(state.datarows);
+                                    print(state.count);
+                                    setState(() {
+                                    });
+                                    print(state.count);
+
+                                  },
+                                  icon: const Icon(Icons.first_page)),
+                              IconButton(
+                                  disabledColor: Colors.grey,
+                                  onPressed: page > 1 ? () {
+                                          events.clear();
+                                          viewModel.getTableData(context, "5", "10", page.toString());
+                                          page--;
+                                          events.addAll(state.datarows);
+                                          setState(() {
+                                          });
+                                          } : null,
+                                  icon: const Icon(Icons.chevron_left)),
+                              Text('${page}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              IconButton(
+                                  onPressed: () {
+                                    events.clear();
+                                    viewModel.getTableData(context, "5", "10", page.toString());
+                                    page++;
+                                    events.addAll(state.datarows);
+                                    setState(() {
+                                    });
+                                  },
+                                  icon: const Icon(Icons.chevron_right)),
+                              IconButton(
+                                  onPressed: () {
+                                    events.clear();
+                                    page = (state.count/10).floor();
+                                    print("${page}  AND  ${state.count % 10}");
+                                    viewModel.getTableData(context, "5", (state.count % 10).toString(), page.toString());
+                                    events.addAll(state.datarows);
+                                    setState(() {
+                                    });
+                                  },
+                                  icon: const Icon(Icons.last_page)),
+
+                            ],
+                          )
                         ]
+
                     ),
                   ),
                   SingleChildScrollView(

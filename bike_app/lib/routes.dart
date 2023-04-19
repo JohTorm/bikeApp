@@ -24,10 +24,17 @@ class AppRouter {
         );
       case '/second':
 
+        final count = arguments['count'] as int;
+
+        print(count);
+        if (count == null) {
+          throw Exception('Route ${settings.name} requires a count');
+        }
+
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => SecondPage(
-            viewModel: SecondPageViewModel(),
+            viewModel: SecondPageViewModel(count: count),
           ),
         );
 

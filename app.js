@@ -42,7 +42,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         try {
             
 
-            await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
+            await csvMerger.merge(["2021-05.csv"], options);
             
 
             var fileName =  options.outputPath;
@@ -92,45 +92,13 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             var collectionName = 'bikeRoutes';
             var collection = await dbConn.collection(collectionName);
 
-            /*
-            await csvtojson().fromFile("2021-05.csv").then(source => {
-                console.log("321")
-                
-                console.log(source[0])
-                // Fetching the all data from each row
-                for (var i = 0; i < source.length; i++) {
-                    var oneRow = {
-                        departure: source[i]["Departure"],
-                        return: source[i]["Return"],
-                        depStatID: source[i]["Departure station id"],
-                        retStatName: source[i]["Return station name"],
-                        retStatID: source[i]["Return station id"],
-                        depStatName: source[i]["Departure station name"],
-                        distance: source[i]["Covered distance (m)"],
-                        duration: source[i]["Duration (sec)"]
-                    };
-                    //Only add data with distance over 10m and duration over 10 sec 
-                    arrayToInsert.push(oneRow);
-                }
-                console.log(arrayToInsert[0])
-
-                
-                
             
-    
-                  
-                });
-                */
-
 
                 await csvtojson()
                 .fromFile(fileName)
                 .then((jsonObj)=>{
 
-                    console.log(jsonObj[0]["Covered distance (m)"]);
-
                     for (var i = 0; i < jsonObj.length; i++) {
-                        
                         var oneRow = {
                             departure: jsonObj[i]["Departure"],
                             return: jsonObj[i]["Return"],
@@ -148,7 +116,6 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                             arrayToInsert.push(oneRow);
                         }
                     }
-                    console.log(arrayToInsert[0])
 
                 })
 
@@ -161,7 +128,12 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     }
                     if(result){
                         console.log("Import CSV into database successfully.");
-                        res.status(200).send();
+
+                        dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
+                            res.json({
+                            size: numOfDocs});
+                        });
+                        
                         
                         
                     }
@@ -193,7 +165,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             var sorting = { "departure": 1};
             
 
-            await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).toArray(function(err, result) {
+            await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
                     
@@ -215,7 +187,17 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
     
         })
 
-        app.get("/api", (req, res) => {
-            res.json({ message: "Hello from server!" });
-          });
+        app.get("/bikeRoutes/size", async (req, res) => {
+
+            
+            await dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
+                res.json({
+                 size: numOfDocs});
+            });
+                
+        });
+            
+            
+
+            
     

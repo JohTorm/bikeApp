@@ -7,12 +7,13 @@ class Webservice {
 
   loadData() async {
     final response = await http.get(
-      Uri.parse('$ip/bikeRoutes/load'),
+      Uri.parse('$ip/bikeRoutes/size'),
 
     );
     if (response.statusCode == 200) {
-        print("TESTI");
-      return 1;
+      var size = jsonDecode(response.body)["size"];
+        //print("TESTI $size");
+      return size;
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
