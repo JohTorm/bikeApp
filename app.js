@@ -67,23 +67,16 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                             //delete 'bikeRoutes' collection if exists
                             dbConn.dropCollection("bikeRoutes", function(err, delOK) {
                                 if (err) {
-                                    console.log(err);
-                                    
-                                    
+                                    console.log(err);                                   
                                 }
                                 if (delOK){ 
                                     console.log("Collection deleted");
-                                    
-                                    
-
-                                    
                                 }
-                                
                               });
                             
-                            } catch {
-                                res.status(500).send()
-                            }
+                        } catch {
+                            res.status(500).send()
+                        }
                     }
                 })
           });    
@@ -91,8 +84,6 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
 
             var collectionName = 'bikeRoutes';
             var collection = await dbConn.collection(collectionName);
-
-            
 
                 await csvtojson()
                 .fromFile(fileName)
@@ -140,7 +131,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                 }); 
             } catch {
                 res.status(500).send()
-            }
+        }
                 
         
     
@@ -161,10 +152,8 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
           }
 
             var query =  { "departure": {$in:[new RegExp(month)]} };
-            
             var sorting = { "departure": 1};
             
-
             await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
@@ -177,27 +166,140 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     res.status(500).send()
                 }
                 });
-
-            
+   
         } catch {
             res.status(500).send()
         }
         
-        
-    
         })
 
         app.get("/bikeRoutes/size", async (req, res) => {
-
-            
             await dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
                 res.json({
                  size: numOfDocs});
-            });
-                
+            }); 
         });
+
+
+
+
+
+
+
+
+
+            
+        app.get('/station/:size-:pageNumber', async (req, res) => {
+            var size = parseInt(req.params.size);
+            var pageNumber = parseInt(req.params.pageNumber);
+
+            if(pageNumber < 0 || pageNumber === 0) {
+                response = {"error" : true,"message" : "invalid page number, should start with 1"};
+                return res.json(response)
+          }
+          
+          var sorting = { "id": 1};
+
+
+            try {
+                var arrayToInsert = [];
+                console.log("123")
+                
+                var fileName = "bikestationdata";
+
+                await dbConn.listCollections().toArray(function(err, items) {
+                    items.forEach(element => {
+                        if(element.name == 'stationInfo') 
+                        { 
+                            try {
+                                //delete 'stationInfo' collection if exists
+                                dbConn.dropCollection("stationInfo", function(err, delOK) {
+                                    if (err) {
+                                        console.log(err);      
+                                                                    
+                                    }
+                                    if (delOK){ 
+                                        console.log("Collection deleted");
+                                    }
+                                  });
+                                
+                            } catch {
+                               // res.status(500).send()
+                               console.log("1233")
+
+                            }
+                        }
+                    })
+              });    
+            } catch {
+                res.status(500).send()
+            }
+    
+            var collectionName = 'stationInfo';
+            var collection = await dbConn.collection(collectionName);
+
+                console.log(fileName);
+
+
+                   await csvtojson()
+                    .fromFile("bikestationdata.csv")
+                    .then((jsonObj)=>{
+                        console.log(fileName);
+
+                        for (var i = 0; i < jsonObj.length; i++) {
+                            var oneRow = {
+                                id: jsonObj[i]["ID"],
+                                nimi: jsonObj[i]["Nimi"],
+                                namn: jsonObj[i]["Namn"],
+                                name: jsonObj[i]["Name"],
+                                osoite: jsonObj[i]["Osoite"],
+                                adress: jsonObj[i]["Adress"],
+                                kaupunki: jsonObj[i]["Kaupunki"],
+                                stad: jsonObj[i]["Stad"],
+                                operaattori: jsonObj[i]["Operaattor"],
+                                kapasiteetti: jsonObj[i]["Kapasiteet"],
+                                x: jsonObj[i]["x"],
+                                y: jsonObj[i]["y"],
+                            };
+                            
+                            console.log("123..")
+
+                            arrayToInsert.push(oneRow);
+                        }
+    
+                    })
+    
+                    //inserting into the table "stationInfo"
+                     collection.insertMany(arrayToInsert, (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            //return res.sendStatus(500);
+                            
+                        }
+                        if(result){
+                            console.log("Import CSV into database successfully.");
+    
+                            dbConn.collection(collectionName).find().skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
+                                if (err) {
+                                    console.log(err);
+                                    
+                                }
+                                try {
+                                    res.json(result);
+                                    console.log("sent! " );
+                                } catch {
+                                    res.status(500).send()
+                                }
+                                });
+                            
+                            
+                            
+                        }
+                    }); 
+                
             
             
+        }) 
 
             
     

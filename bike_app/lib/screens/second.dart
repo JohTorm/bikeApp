@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../model/datarow.dart';
+import '../model/station.dart';
 import '../model/view.abs.dart';
 
 
@@ -35,6 +36,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
   bool isButtonDisabled = false;
   List<bool> boolList = List.filled(99, true);
   List<Datarow> events = <Datarow>[];
+  List<Station> stations = <Station>[];
 
   final List<Map<String, String>> listOfColumns = [
     {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
@@ -48,6 +50,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
     super.initState();
     listenToRoutesSpecs(viewModel.routes);
     viewModel.getTableData(context, "5", "10", "1");
+    viewModel.getStationInfo(context, "10", "1");
 
 
     _selectedDay = _focusedDay;
@@ -71,6 +74,8 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
         final state = snapshot.data!;
         events.clear();
         events.addAll(state.datarows);
+        stations.clear();
+        stations.addAll(state.stations);
 
 
 
@@ -244,7 +249,85 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                       child: ListBody(
                         children: <Widget>[
                           Text('Station information', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
-                          Container(),
+                          Scrollbar(
+                            thumbVisibility: true, trackVisibility: true,//always show scrollbar
+                            thickness: 10, //width of scrollbar
+                            radius: Radius.circular(10), //corner radius of scrollbar
+                            interactive: true,
+                            scrollbarOrientation: ScrollbarOrientation.bottom,
+                            child:
+                            SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child:    DataTable(
+                                  columns: [
+                                    DataColumn(label: Text('Station name')),
+                                    DataColumn(label: Text('Station id')),
+                                  ],
+                                  rows:
+                                  stations.map(
+                                    ((element) => DataRow(
+                                      cells: <DataCell>[
+                                        DataCell(Text(element.nimi!)),
+                                        DataCell(Text(element.id!)),
+                                      ],
+                                    )),
+                                  ).toList(),
+                                )
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('1-10 of ${state.stations.length}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              IconButton(
+                                  onPressed: () {
+                                    stations.clear();
+                                    viewModel.getStationInfo(context,"10", "1");
+                                    page = 1;
+                                    stations.addAll(state.stations);
+                                    print(state.count);
+                                    setState(() {
+                                    });
+                                    print(state.count);
+
+                                  },
+                                  icon: const Icon(Icons.first_page)),
+                              IconButton(
+                                  disabledColor: Colors.grey,
+                                  onPressed: page > 1 ? () {
+                                    stations.clear();
+                                    viewModel.getStationInfo(context,"10", page.toString());
+                                    page--;
+                                    stations.addAll(state.stations);
+                                    setState(() {
+                                    });
+                                  } : null,
+                                  icon: const Icon(Icons.chevron_left)),
+                              Text('${page}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              IconButton(
+                                  onPressed: () {
+                                    stations.clear();
+                                    viewModel.getStationInfo(context,"10", page.toString());
+                                    page++;
+                                    stations.addAll(state.stations);
+                                    setState(() {
+                                    });
+                                  },
+                                  icon: const Icon(Icons.chevron_right)),
+                              IconButton(
+                                  onPressed: () {
+                                    stations.clear();
+                                    page = (state.stations.length/10).floor();
+                                    print("${page}  AND  ${state.count % 10}");
+                                    viewModel.getStationInfo(context,"10", page.toString());
+                                    stations.addAll(state.stations);
+                                    setState(() {
+                                    });
+                                  },
+                                  icon: const Icon(Icons.last_page)),
+
+                            ],
+                          )
 
                         ],
                       )
