@@ -32,7 +32,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
 
   bool attend = false;
-  int page = 1;
+  int page1 = 1;
+  int page2 = 1;
+
   bool isButtonDisabled = false;
   List<bool> boolList = List.filled(99, true);
   List<Datarow> events = <Datarow>[];
@@ -93,7 +95,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                     Tab(icon: Icon(Icons.group))
                   ],
                 ),
-                title: Text("""Hello ${state.count}"""),
+                title: Text("""Hello ${state.stationLength}"""),
                 automaticallyImplyLeading: false,
                 actions: [
 
@@ -196,7 +198,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   onPressed: () {
                                     events.clear();
                                     viewModel.getTableData(context, "5", "10", "1");
-                                    page = 1;
+                                    page1 = 1;
                                     events.addAll(state.datarows);
                                     print(state.count);
                                     setState(() {
@@ -207,21 +209,21 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   icon: const Icon(Icons.first_page)),
                               IconButton(
                                   disabledColor: Colors.grey,
-                                  onPressed: page > 1 ? () {
+                                  onPressed: page1 > 1 ? () {
                                           events.clear();
-                                          viewModel.getTableData(context, "5", "10", page.toString());
-                                          page--;
+                                          viewModel.getTableData(context, "5", "10", page1.toString());
+                                          page1--;
                                           events.addAll(state.datarows);
                                           setState(() {
                                           });
                                           } : null,
                                   icon: const Icon(Icons.chevron_left)),
-                              Text('${page}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              Text('${page1}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
                               IconButton(
                                   onPressed: () {
                                     events.clear();
-                                    viewModel.getTableData(context, "5", "10", page.toString());
-                                    page++;
+                                    viewModel.getTableData(context, "5", "10", page1.toString());
+                                    page1++;
                                     events.addAll(state.datarows);
                                     setState(() {
                                     });
@@ -230,9 +232,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                               IconButton(
                                   onPressed: () {
                                     events.clear();
-                                    page = (state.count/10).floor();
-                                    print("${page}  AND  ${state.count % 10}");
-                                    viewModel.getTableData(context, "5", (state.count % 10).toString(), page.toString());
+                                    page1 = (state.count/10).ceil();
+                                    print("${page1}  AND  ${state.count % 10}");
+                                    viewModel.getTableData(context, "5", "10", page1.toString());
                                     events.addAll(state.datarows);
                                     setState(() {
                                     });
@@ -278,12 +280,13 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('1-10 of ${state.stations.length}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              Text('1-10 of ${state.stationLength}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
                               IconButton(
                                   onPressed: () {
                                     stations.clear();
+                                    page2 = 1;
                                     viewModel.getStationInfo(context,"10", "1");
-                                    page = 1;
+
                                     stations.addAll(state.stations);
                                     print(state.count);
                                     setState(() {
@@ -294,21 +297,23 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   icon: const Icon(Icons.first_page)),
                               IconButton(
                                   disabledColor: Colors.grey,
-                                  onPressed: page > 1 ? () {
+                                  onPressed: page2 > 1 ? () {
                                     stations.clear();
-                                    viewModel.getStationInfo(context,"10", page.toString());
-                                    page--;
+                                    page2--;
+                                    viewModel.getStationInfo(context,"10", page2.toString());
+
                                     stations.addAll(state.stations);
                                     setState(() {
                                     });
                                   } : null,
                                   icon: const Icon(Icons.chevron_left)),
-                              Text('${page}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              Text('${page2}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
                               IconButton(
                                   onPressed: () {
                                     stations.clear();
-                                    viewModel.getStationInfo(context,"10", page.toString());
-                                    page++;
+                                    page2++;
+                                    viewModel.getStationInfo(context,"10", page2.toString());
+
                                     stations.addAll(state.stations);
                                     setState(() {
                                     });
@@ -317,9 +322,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                               IconButton(
                                   onPressed: () {
                                     stations.clear();
-                                    page = (state.stations.length/10).floor();
-                                    print("${page}  AND  ${state.count % 10}");
-                                    viewModel.getStationInfo(context,"10", page.toString());
+                                    page2 = (state.stationLength/10).ceil();
+                                    print("${page2}  AND  ${state.stationLength % 10}");
+                                    viewModel.getStationInfo(context,"10", page2.toString());
                                     stations.addAll(state.stations);
                                     setState(() {
                                     });

@@ -11,9 +11,11 @@ class Webservice {
 
     );
     if (response.statusCode == 200) {
-      var size = jsonDecode(response.body)["size"];
-        //print("TESTI $size");
-      return size;
+      var sizeBikeJourneys = jsonDecode(response.body)[0];
+        print("TESTI $sizeBikeJourneys");
+      var sizeStationInfo = jsonDecode(response.body)[1];
+      print("TESTI $sizeStationInfo");
+      return [sizeBikeJourneys, sizeStationInfo];
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.

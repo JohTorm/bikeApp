@@ -40,8 +40,8 @@ class LoginScreenViewModel extends ViewModel {
   Future<void> login(context, String email, String pwd) async {
     final loadData = await Webservice().loadData();
 
-    if(loadData > 0) {
-      updateState(loadData);
+    if(loadData.length > 0) {
+      updateState(loadData[0]);
 
 
       _routesSubject.add(
@@ -49,7 +49,8 @@ class LoginScreenViewModel extends ViewModel {
           name: '/second',
           arguments: {
             'loadOk': _stateSubject.value.loadOk,
-            'count': loadData
+            'count': loadData[0],
+            'stationLength': loadData[1]
           },
         ),
       );

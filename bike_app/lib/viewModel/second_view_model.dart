@@ -22,6 +22,7 @@ import '../service/webservice.dart';
 class SecondPageState {
   final bool loadOk;
   final int count;
+  final int stationLength;
   final  datarows;
   final stations;
 
@@ -30,7 +31,8 @@ class SecondPageState {
     this.loadOk = false,
     this.count = 0,
     this.datarows = List<Datarow>,
-    this.stations = List<Station>
+    this.stations = List<Station>,
+    this.stationLength = 0,
 
 
   });
@@ -39,14 +41,16 @@ class SecondPageState {
     bool? loadOk,
     List<Datarow>? datarows,
     int? count,
-    List<Station>? stations
+    List<Station>? stations,
+    int? stationLength
 
   }) {
     return SecondPageState(
       loadOk: loadOk ?? this.loadOk,
       datarows: datarows ?? this.datarows,
       count: count ?? this.count,
-      stations: stations ?? this.stations
+      stations: stations ?? this.stations,
+      stationLength: stationLength ?? this.stationLength
 
     );
   }
@@ -60,8 +64,8 @@ class SecondPageViewModel extends ViewModel {
   final _routesSubject = PublishSubject<AppRouteSpec>();
   Stream<AppRouteSpec> get routes => _routesSubject;
 
-  SecondPageViewModel({required int count}) {
-    _stateSubject.add(SecondPageState(count: count));
+  SecondPageViewModel({required int count, required int stationLength}) {
+    _stateSubject.add(SecondPageState(count: count, stationLength: stationLength));
   }
   final List <String> groupNames = <String>[];
   List<bool> boolList = List.filled(99, true);

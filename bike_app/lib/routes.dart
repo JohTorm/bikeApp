@@ -25,6 +25,8 @@ class AppRouter {
       case '/second':
 
         final count = arguments['count'] as int;
+        final stationLength = arguments['stationLength'] as int;
+
 
         print(count);
         if (count == null) {
@@ -34,7 +36,7 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => SecondPage(
-            viewModel: SecondPageViewModel(count: count),
+            viewModel: SecondPageViewModel(count: count, stationLength: stationLength),
           ),
         );
 

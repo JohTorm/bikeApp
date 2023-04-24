@@ -174,10 +174,36 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         })
 
         app.get("/bikeRoutes/size", async (req, res) => {
+            
+            /*
             await dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
-                res.json({
-                 size: numOfDocs});
-            }); 
+                res.json().append({
+                    sizeBikeRoutes: numOfDocs
+                }); 
+                
+            });
+            */
+            async.parallel([
+                function(callback){
+                    dbConn.collection("bikeRoutes").count({}, function(error, result1) {
+                        callback(error, result1);
+                    });
+                },
+                function(callback){
+                    dbConn.collection("stationInfo").count({}, function(error, result2) {
+                        callback(error, result2);
+                    });
+                }
+        
+                ],function(err,results){
+                    if(err){
+                        res.json({"status": "failed", "message": error.message})
+                    }else{
+                        res.send(results); //both result1 and result2 will be in results
+                    }
+            });
+                    
+
         });
 
 
@@ -279,7 +305,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                         if(result){
                             console.log("Import CSV into database successfully.");
     
-                            dbConn.collection(collectionName).find().skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
+                            dbConn.collection(collectionName).find().skip(size * (pageNumber - 1)).sort(sorting).collation({ locale: "en_US", numericOrdering: true }).limit(size).allowDiskUse(true).toArray(function(err, result) {
                                 if (err) {
                                     console.log(err);
                                     
