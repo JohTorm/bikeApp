@@ -22,29 +22,23 @@ class SecondPage extends View<SecondPageViewModel> {
 class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
   _SecondPageState(SecondPageViewModel viewModel) : super(viewModel);
 
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
-      .toggledOff; // Can be toggled on/off by longpressing a date
+
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
+
 
 
   bool attend = false;
   int page1 = 1;
   int page2 = 1;
-
+  int month = 5;
+  int count = 0;
+  String monthName = 'May';
   bool isButtonDisabled = false;
   List<bool> boolList = List.filled(99, true);
   List<Datarow> events = <Datarow>[];
   List<Station> stations = <Station>[];
 
-  final List<Map<String, String>> listOfColumns = [
-    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
-    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
-    {"departure": "AAAAAA", "return": "1", "depStatID": "sd","depStatName": "2", "retStatID": "1", "retStatName": "Yes","duration": "AAAAAA", "distance": "1"},
-  ];
+
 
 
   @override
@@ -54,8 +48,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
     viewModel.getTableData(context, "5", "10", "1");
     viewModel.getStationInfo(context, "10", "1");
 
-
-    _selectedDay = _focusedDay;
   }
 
   @override
@@ -74,6 +66,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
         if (!snapshot.hasData) return Container();
 
         final state = snapshot.data!;
+
         events.clear();
         events.addAll(state.datarows);
         stations.clear();
@@ -95,7 +88,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                     Tab(icon: Icon(Icons.group))
                   ],
                 ),
-                title: Text("""Hello ${state.stationLength}"""),
+                title: Text("""Bike Journey App"""),
                 automaticallyImplyLeading: false,
                 actions: [
 
@@ -159,8 +152,67 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                 SingleChildScrollView(
                     child: ListBody(
                         children: <Widget>[
-                          const Text('Bike Journeys', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 32.0),textAlign: TextAlign.center,),
-                  Scrollbar(
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Choose Month', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 24.0),textAlign: TextAlign.center,),
+                                PopupMenuButton(
+                                  // add icon, by default "3 dot" icon
+                                    icon: Icon(Icons.calendar_month),
+                                    itemBuilder: (context){
+                                      return [
+                                        PopupMenuItem<int>(
+                                          value: 5,
+                                          child: Text("May"),
+                                        ),
+
+                                        PopupMenuItem<int>(
+                                          value: 6,
+                                          child: Text("June"),
+                                        ),
+                                        PopupMenuItem<int>(
+                                          value: 7,
+                                          child: Text("July"),
+                                        ),
+
+                                      ];
+                                    },
+                                    onSelected:(value) async{
+                                      if(value == 5){
+                                        count = state.countMay;
+                                        month = 5;
+                                        monthName = 'May';
+                                        viewModel.getTableData(context, month.toString(), "10", page1.toString());
+                                        setState(() {
+                                        });
+                                        print("My groups menu is selected.");
+                                      }
+                                      else if(value == 6){
+                                        count = state.countJune;
+                                        month = 6;
+                                        monthName = 'June';
+                                        viewModel.getTableData(context, month.toString(), "10", page1.toString());
+                                        setState(() {
+                                        });
+                                        print("Create new group menu is selected.");
+                                      }else if(value == 7){
+                                        count = state.countJuly;
+                                        month = 7;
+                                        monthName = 'July';
+                                        viewModel.getTableData(context, month.toString(), "10", page1.toString());
+                                        setState(() {
+                                        });
+                                        print("Settings menu is selected.");
+                                      }
+                                    }
+                                ),
+                                Text('(${monthName})', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 24.0),textAlign: TextAlign.center,),
+
+
+                              ]
+                          ),
+                          Scrollbar(
+
                       thumbVisibility: true, trackVisibility: true,//always show scrollbar
                       thickness: 10, //width of scrollbar
                       radius: Radius.circular(10), //corner radius of scrollbar
@@ -193,17 +245,17 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('1-10 of ${state.count}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
+                              Text('1-10 of ${count}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12.0),textAlign: TextAlign.center,),
                               IconButton(
                                   onPressed: () {
                                     events.clear();
-                                    viewModel.getTableData(context, "5", "10", "1");
+                                    viewModel.getTableData(context, month.toString(), "10", "1");
                                     page1 = 1;
                                     events.addAll(state.datarows);
-                                    print(state.count);
+                                    print(count);
                                     setState(() {
                                     });
-                                    print(state.count);
+                                    print(count);
 
                                   },
                                   icon: const Icon(Icons.first_page)),
@@ -211,7 +263,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   disabledColor: Colors.grey,
                                   onPressed: page1 > 1 ? () {
                                           events.clear();
-                                          viewModel.getTableData(context, "5", "10", page1.toString());
+                                          viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                           page1--;
                                           events.addAll(state.datarows);
                                           setState(() {
@@ -222,7 +274,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                               IconButton(
                                   onPressed: () {
                                     events.clear();
-                                    viewModel.getTableData(context, "5", "10", page1.toString());
+                                    viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                     page1++;
                                     events.addAll(state.datarows);
                                     setState(() {
@@ -232,9 +284,9 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                               IconButton(
                                   onPressed: () {
                                     events.clear();
-                                    page1 = (state.count/10).ceil();
-                                    print("${page1}  AND  ${state.count % 10}");
-                                    viewModel.getTableData(context, "5", "10", page1.toString());
+                                    page1 = (state.countMay/10).ceil();
+                                    print("${page1}  AND  ${count % 10}");
+                                    viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                     events.addAll(state.datarows);
                                     setState(() {
                                     });
@@ -242,7 +294,8 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   icon: const Icon(Icons.last_page)),
 
                             ],
-                          )
+                          ),
+
                         ]
 
                     ),
@@ -288,10 +341,10 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                     viewModel.getStationInfo(context,"10", "1");
 
                                     stations.addAll(state.stations);
-                                    print(state.count);
+                                    print(count);
                                     setState(() {
                                     });
-                                    print(state.count);
+                                    print(count);
 
                                   },
                                   icon: const Icon(Icons.first_page)),
@@ -332,10 +385,12 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   icon: const Icon(Icons.last_page)),
 
                             ],
-                          )
+                          ),
+
 
                         ],
-                      )
+                      ),
+
                   ),
 
                 ],

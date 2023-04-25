@@ -24,19 +24,21 @@ class AppRouter {
         );
       case '/second':
 
-        final count = arguments['count'] as int;
+        final countMay = arguments['countMay'] as int;
+        final countJune = arguments['countJune'] as int;
+        final countJuly = arguments['countJuly'] as int;
         final stationLength = arguments['stationLength'] as int;
 
 
-        print(count);
-        if (count == null) {
+        print(countMay);
+        if (countMay == null) {
           throw Exception('Route ${settings.name} requires a count');
         }
 
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => SecondPage(
-            viewModel: SecondPageViewModel(count: count, stationLength: stationLength),
+            viewModel: SecondPageViewModel(countMay: countMay,countJune: countJune,countJuly: countJuly, stationLength: stationLength),
           ),
         );
 

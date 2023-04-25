@@ -1,5 +1,4 @@
 var mongoUrl = require('url');
-var url = require('url');
 
 const csvtojson = require('csvtojson'); 
 const mongodb = require('mongodb');
@@ -12,6 +11,10 @@ const csvMerger = require('csv-merger');
 
 
 var mongoUrl = "mongodb://localhost:27017/db";
+
+const fs = require('fs')
+
+const path = './testi.csv'
 
 var dbConn;
 
@@ -39,38 +42,41 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             outputPath: "testi.csv", // string: path to the output CSV file
             writeOutput: true, // boolean: if true, the output will be written to a file, otherwise will be returned by the function 
         }
-        try {
-            
 
-            await csvMerger.merge(["2021-05.csv"], options);
-            
+        if(!fs.existsSync(path)) {
+            try {
+                
 
-            var fileName =  options.outputPath;
-            console.log("merge Complete!")
-            
+                await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
+                
 
-        } catch {
-            res.status(500).send()
+                
+                console.log("merge Complete!")
+                
+
+            } catch {
+                res.status(500).send()
+            }
         }
 
-        
+        var fileName =  options.outputPath;
         
         try {
             var arrayToInsert = [];
             console.log("123")
 
-            dbConn.listCollections().toArray(function(err, items) {
+            await dbConn.listCollections().toArray(function(err, items)  {
                 items.forEach(element => {
-                    if(element.name == 'bikeRoutes') 
+                    if(element.name == 'stationInfo') 
                     { 
                         try {
-                            //delete 'bikeRoutes' collection if exists
-                            dbConn.dropCollection("bikeRoutes", function(err, delOK) {
+                            
+                            dbConn.dropCollection("stationInfo", function(err, delOK) {
                                 if (err) {
                                     console.log(err);                                   
                                 }
                                 if (delOK){ 
-                                    console.log("Collection deleted");
+                                    console.log("Collection deleted 1");
                                 }
                               });
                             
@@ -80,7 +86,75 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     }
                 })
           });    
+        } catch {
+            res.status(500).send()
+        } 
 
+        await csvtojson()
+                    .fromFile("bikestationdata.csv")
+                    .then((jsonObj)=>{
+                        console.log(fileName);
+
+                        for (var i = 0; i < jsonObj.length; i++) {
+                            var oneRow = {
+                                id: jsonObj[i]["ID"],
+                                nimi: jsonObj[i]["Nimi"],
+                                namn: jsonObj[i]["Namn"],
+                                name: jsonObj[i]["Name"],
+                                osoite: jsonObj[i]["Osoite"],
+                                adress: jsonObj[i]["Adress"],
+                                kaupunki: jsonObj[i]["Kaupunki"],
+                                stad: jsonObj[i]["Stad"],
+                                operaattori: jsonObj[i]["Operaattor"],
+                                kapasiteetti: jsonObj[i]["Kapasiteet"],
+                                x: jsonObj[i]["x"],
+                                y: jsonObj[i]["y"],
+                            };
+                            
+                            arrayToInsert.push(oneRow);
+                        }
+    
+                    })
+                    
+                    dbConn.collection("stationInfo");
+                    //inserting into the table "stationInfo"
+                    
+                     dbConn.collection("stationInfo").insertMany(arrayToInsert, (err, result) => {
+                        console.log("TESTI TESTERIINO")
+
+                        if (err) {
+                            console.log(err);
+                            //return res.sendStatus(500);
+                            
+                        }
+                    });
+            
+                    arrayToInsert = [];
+
+                
+                    await dbConn.listCollections().toArray(function(err, items)  {
+                        items.forEach(element => {
+                            if(element.name == 'bikeRoutes') 
+                            { 
+                                try {
+                                    
+                                    dbConn.dropCollection("bikeRoutes", function(err, delOK) {
+                                        if (err) {
+                                            console.log(err);                                   
+                                        }
+                                        if (delOK){ 
+                                            console.log("Collection deleted 2");
+                                        }
+                                      });
+                                    
+                                } catch {
+                                    res.status(500).send()
+                                }
+                            }
+                        })
+                  });  
+                    
+                 
 
             var collectionName = 'bikeRoutes';
             var collection = await dbConn.collection(collectionName);
@@ -111,27 +185,38 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                 })
 
                 //inserting into the table "bikeRoutes"
-                 collection.insertMany(arrayToInsert, (err, result) => {
+                collection.insertMany(arrayToInsert, async (err, result) => {
                     if (err) {
                         console.log(err);
                         //return res.sendStatus(500);
                         
                     }
                     if(result){
-                        console.log("Import CSV into database successfully.");
+                        console.log("Import CSV into database successfully. 1");
+                        
+                        const sizeMay = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-05/]}});
+                        console.log(sizeMay);
 
-                        dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
-                            res.json({
-                            size: numOfDocs});
+                        const sizeJune = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-06/]}});
+                        console.log(sizeJune);
+
+                        const sizeJuly = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-07/]}});
+                        console.log(sizeJuly);
+
+                        const sizeStation = await dbConn.collection("stationInfo").countDocuments();
+                        console.log(sizeStation);
+
+                        res.json({
+                            sizeBikeJourneyMay : sizeMay,
+                            sizeBikeJourneyJune : sizeJune,
+                            sizeBikeJourneyJuly : sizeJuly,
+                            sizeStationInfo : sizeStation
                         });
-                        
-                        
-                        
                     }
                 }); 
-            } catch {
-                res.status(500).send()
-        }
+
+                
+            
                 
         
     
@@ -154,6 +239,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             var query =  { "departure": {$in:[new RegExp(month)]} };
             var sorting = { "departure": 1};
             
+            console.log(query);
             await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
                 if (err) {
                     console.log(err);

@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  dropdown_formfield:
+    dependency: "direct main"
+    description:
+      name: dropdown_formfield
+      sha256: "740b046ed3481f139b9a9ed67ec554f3d1d90a00690c98b3bbfe817a764674e6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.4"
   email_validator:
     dependency: "direct main"
     description:

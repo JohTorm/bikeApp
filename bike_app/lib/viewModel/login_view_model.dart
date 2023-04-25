@@ -41,16 +41,18 @@ class LoginScreenViewModel extends ViewModel {
     final loadData = await Webservice().loadData();
 
     if(loadData.length > 0) {
-      updateState(loadData[0]);
-
+     // updateState(loadData[0]);
+      print(loadData);
 
       _routesSubject.add(
         AppRouteSpec(
           name: '/second',
           arguments: {
             'loadOk': _stateSubject.value.loadOk,
-            'count': loadData[0],
-            'stationLength': loadData[1]
+            'countMay': loadData[0],
+            'countJune': loadData[1],
+            'countJuly': loadData[2],
+            'stationLength': loadData[3]
           },
         ),
       );

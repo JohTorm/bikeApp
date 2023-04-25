@@ -7,15 +7,19 @@ class Webservice {
 
   loadData() async {
     final response = await http.get(
-      Uri.parse('$ip/bikeRoutes/size'),
+      Uri.parse('$ip/bikeRoutes/load'),
 
     );
     if (response.statusCode == 200) {
-      var sizeBikeJourneys = jsonDecode(response.body)[0];
-        print("TESTI $sizeBikeJourneys");
-      var sizeStationInfo = jsonDecode(response.body)[1];
+      var sizeBikeJourneysMay = jsonDecode(response.body)["sizeBikeJourneyMay"];
+        print("TESTI ${sizeBikeJourneysMay}");
+      var sizeBikeJourneysJune = jsonDecode(response.body)["sizeBikeJourneyJune"];
+      print("TESTI $sizeBikeJourneysJune");
+      var sizeBikeJourneysJuly = jsonDecode(response.body)["sizeBikeJourneyJuly"];
+      print("TESTI $sizeBikeJourneysJuly");
+      var sizeStationInfo = jsonDecode(response.body)["sizeStationInfo"];
       print("TESTI $sizeStationInfo");
-      return [sizeBikeJourneys, sizeStationInfo];
+      return [sizeBikeJourneysMay,sizeBikeJourneysJune,sizeBikeJourneysJuly, sizeStationInfo];
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
