@@ -314,6 +314,7 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                             SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child:    DataTable(
+                                  showCheckboxColumn: false,
                                   columns: [
                                     DataColumn(label: Text('Station name')),
                                     DataColumn(label: Text('Station id')),
@@ -321,6 +322,11 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   rows:
                                   stations.map(
                                     ((element) => DataRow(
+
+                                      onSelectChanged: (value) {
+                                        print('STATION ID : ${element.id}');
+                                        viewModel.displayDialogStation(context, element);
+                                      },
                                       cells: <DataCell>[
                                         DataCell(Text(element.nimi!)),
                                         DataCell(Text(element.id!)),

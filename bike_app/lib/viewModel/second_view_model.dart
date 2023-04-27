@@ -133,6 +133,71 @@ Future<void> getTableData(context,String month, String size, String pageNumber) 
     }
   }
 
+  Future<void> displayDialogStation(context, station) async {
+    Station asema = station;
+    print('ASEMA : ${asema.id}');
+    final statioData = await Webservice().getStationData(asema.id);
+    print('TESTIOII   ${statioData[0][0]}');
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+            title: Text(asema.name),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.map),
+                      Text(asema.osoite),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Total Journeys starting: ',textScaleFactor: 0.8),
+                      Text('${statioData[2][0]["n_dep"]}',textScaleFactor: 0.8),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Total Journeys ending: ',textScaleFactor: 0.8),
+                      Text('${statioData[3][0]["n_ret"]}',textScaleFactor: 0.8),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Average distance starting (km): ',textScaleFactor: 0.8),
+                      Text('${(statioData[0][0]["avg_dist_dep"]/1000).toStringAsFixed(2)}',textScaleFactor: 0.8),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Average distance ending (km): ',textScaleFactor: 0.8),
+                      Text('${(statioData[1][0]["avg_dist_ret"]/1000).toStringAsFixed(2)}',textScaleFactor: 0.8),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+
+                },
+              ),
+            ],
+            actionsAlignment: MainAxisAlignment.spaceBetween
+        );
+      },
+    );
+  }
+
+
+
+
 
   void logOut() {
     _routesSubject.add(

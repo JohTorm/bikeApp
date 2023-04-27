@@ -47,7 +47,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             try {
                 
 
-                await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
+                await csvMerger.merge(["2021-05.csv"], options);
                 
 
                 
@@ -301,117 +301,259 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
 
 
             
-        app.get('/station/:size-:pageNumber', async (req, res) => {
-            var size = parseInt(req.params.size);
-            var pageNumber = parseInt(req.params.pageNumber);
+app.get('/station/:size-:pageNumber', async (req, res) => {
+    var size = parseInt(req.params.size);
+    var pageNumber = parseInt(req.params.pageNumber);
 
-            if(pageNumber < 0 || pageNumber === 0) {
-                response = {"error" : true,"message" : "invalid page number, should start with 1"};
-                return res.json(response)
-          }
-          
-          var sorting = { "id": 1};
+    if(pageNumber < 0 || pageNumber === 0) {
+        response = {"error" : true,"message" : "invalid page number, should start with 1"};
+        return res.json(response)
+    }
+    
+    var sorting = { "id": 1};
 
+    try {
+        var arrayToInsert = [];
+        console.log("123")
+        
+        var fileName = "bikestationdata";
 
-            try {
-                var arrayToInsert = [];
-                console.log("123")
-                
-                var fileName = "bikestationdata";
-
-                await dbConn.listCollections().toArray(function(err, items) {
-                    items.forEach(element => {
-                        if(element.name == 'stationInfo') 
-                        { 
-                            try {
-                                //delete 'stationInfo' collection if exists
-                                dbConn.dropCollection("stationInfo", function(err, delOK) {
-                                    if (err) {
-                                        console.log(err);      
-                                                                    
-                                    }
-                                    if (delOK){ 
-                                        console.log("Collection deleted");
-                                    }
-                                  });
-                                
-                            } catch {
-                               // res.status(500).send()
-                               console.log("1233")
-
+        await dbConn.listCollections().toArray(function(err, items) {
+            items.forEach(element => {
+                if(element.name == 'stationInfo') 
+                { 
+                    try {
+                        //delete 'stationInfo' collection if exists
+                        dbConn.dropCollection("stationInfo", function(err, delOK) {
+                            if (err) {
+                                console.log(err);      
+                                                            
                             }
-                        }
-                    })
-              });    
+                            if (delOK){ 
+                                console.log("Collection deleted");
+                            }
+                            });
+                        
+                    } catch {
+                        // res.status(500).send()
+                        console.log("1233")
+
+                    }
+                }
+            })
+        });    
+    } catch {
+        res.status(500).send()
+    }
+
+    var collectionName = 'stationInfo';
+    var collection = await dbConn.collection(collectionName);
+
+    console.log(fileName);
+
+    await csvtojson()
+    .fromFile("bikestationdata.csv")
+    .then((jsonObj)=>{
+        console.log(fileName);
+
+        for (var i = 0; i < jsonObj.length; i++) {
+            var oneRow = {
+                id: jsonObj[i]["ID"],
+                nimi: jsonObj[i]["Nimi"],
+                namn: jsonObj[i]["Namn"],
+                name: jsonObj[i]["Name"],
+                osoite: jsonObj[i]["Osoite"],
+                adress: jsonObj[i]["Adress"],
+                kaupunki: jsonObj[i]["Kaupunki"],
+                stad: jsonObj[i]["Stad"],
+                operaattori: jsonObj[i]["Operaattor"],
+                kapasiteetti: jsonObj[i]["Kapasiteet"],
+                x: jsonObj[i]["x"],
+                y: jsonObj[i]["y"],
+            };
+            arrayToInsert.push(oneRow);
+        }
+
+    })
+
+    //inserting into the table "stationInfo"
+    collection.insertMany(arrayToInsert, (err, result) => {
+    if (err) {
+        console.log(err);
+        //return res.sendStatus(500);
+        
+    }
+    if(result){
+        console.log("Import CSV into database successfully.");
+
+        dbConn.collection(collectionName).find().skip(size * (pageNumber - 1)).sort(sorting).collation({ locale: "en_US", numericOrdering: true }).limit(size).allowDiskUse(true).toArray(function(err, result) {
+            if (err) {
+                console.log(err);  
+            }
+            try {
+                res.json(result);
+                console.log("sent! " );
             } catch {
                 res.status(500).send()
             }
+        });  
+        }
+    });  
+}) 
+
+app.get('/station/info:id', async (req, res) => {
     
-            var collectionName = 'stationInfo';
-            var collection = await dbConn.collection(collectionName);
+    let id = req.params.id
 
-                console.log(fileName);
-
-
-                   await csvtojson()
-                    .fromFile("bikestationdata.csv")
-                    .then((jsonObj)=>{
-                        console.log(fileName);
-
-                        for (var i = 0; i < jsonObj.length; i++) {
-                            var oneRow = {
-                                id: jsonObj[i]["ID"],
-                                nimi: jsonObj[i]["Nimi"],
-                                namn: jsonObj[i]["Namn"],
-                                name: jsonObj[i]["Name"],
-                                osoite: jsonObj[i]["Osoite"],
-                                adress: jsonObj[i]["Adress"],
-                                kaupunki: jsonObj[i]["Kaupunki"],
-                                stad: jsonObj[i]["Stad"],
-                                operaattori: jsonObj[i]["Operaattor"],
-                                kapasiteetti: jsonObj[i]["Kapasiteet"],
-                                x: jsonObj[i]["x"],
-                                y: jsonObj[i]["y"],
-                            };
-                            
-                            console.log("123..")
-
-                            arrayToInsert.push(oneRow);
-                        }
+    console.log(id);
     
-                    })
     
-                    //inserting into the table "stationInfo"
-                     collection.insertMany(arrayToInsert, (err, result) => {
-                        if (err) {
-                            console.log(err);
-                            //return res.sendStatus(500);
-                            
-                        }
-                        if(result){
-                            console.log("Import CSV into database successfully.");
     
-                            dbConn.collection(collectionName).find().skip(size * (pageNumber - 1)).sort(sorting).collation({ locale: "en_US", numericOrdering: true }).limit(size).allowDiskUse(true).toArray(function(err, result) {
-                                if (err) {
-                                    console.log(err);
-                                    
-                                }
-                                try {
-                                    res.json(result);
-                                    console.log("sent! " );
-                                } catch {
-                                    res.status(500).send()
-                                }
-                                });
-                            
-                            
-                            
-                        }
-                    }); 
-                
+    const countDep = await dbConn.collection("bikeRoutes").countDocuments({'depStatID': id});
+    const countRet = await dbConn.collection("bikeRoutes").countDocuments({'retStatID': id});
+    
+     avgDistance = 0;
+    await dbConn.collection("bikeRoutes").aggregate([
+        {
+          $group: {
+            _id: "",
+            avg_val:{$avg:{$toDouble:"$distance"}}
+          }
+        }
+      ]).toArray(function(err, result) {
+        if (err) {
+            console.log(err);  
+        }
+        try {
+           // res.json(result);
+            console.log('JII ' + result[0]["avg_val"]);
+            avgDistance = result[0]["avg_val"];
+        } catch {
+            res.status(500).send()
+        }
+    });
+
+    var avgDuration = 0;
+    await dbConn.collection("bikeRoutes").aggregate([
+        {
+          $group: {
+            _id: "",
+            avg_val:{$avg:{$toDouble:"$duration"}}
+          }
+        }
+      ]).toArray(function(err, result) {
+        if (err) {
+            console.log(err);  
+        }
+        try {
+           // res.json(result);
+            console.log('JII ' + result[0]["avg_val"]);
+            avgDuration = result[0]["avg_val"];
+        } catch {
+            res.status(500).send()
+        }
+    })
+
+    console.log(avgDuration + ' ' + avgDistance);
+
+    async.parallel([
+        function(callback){
+            dbConn.collection("bikeRoutes").aggregate([
+                {
+                    $match: {
+                        depStatID: id
+                    }
+                },
+                {
+                  $group: {
+                    _id: "depStatID",
+                    avg_dist_dep:{$avg:{$toDouble:"$distance"}}
+                  }
+                }
+              ]).toArray(function(err, result1) {
+                if (err) {
+                    console.log(err);  
+                }
+                else {
+                   callback(err, result1);
+                    console.log('JII ' + result1[0]["avg_dist_dep"]);
+                    
+                } 
+            })
+        },
+        function(callback){
+            dbConn.collection("bikeRoutes").aggregate([
+                {
+                    $match: {
+                        retStatID: id
+                    }
+                },
+                {
+                  $group: {
+                    _id: "retStatID",
+                    avg_dist_ret:{$avg:{$toDouble:"$distance"}}
+                  }
+                }
+              ]).toArray(function(err, result2) {
+                if (err) {
+                    console.log(err);  
+                }
+                else {
+                   callback(err, result2);
+                    console.log('JII ' + result2[0]["avg_dist_ret"]);
+                    
+                } 
+            })
+        },
+        function(callback){
+            dbConn.collection("bikeRoutes").aggregate([
+                { $match: {'depStatID': id} },
+                { $group: { _id: null, n_dep: { $sum: 1 } } }
+             ])
+            .toArray(function(err, result3) {
+                if (err) {
+                    console.log(err);  
+                }
+                else {
+                   callback(err, result3);
+                    console.log('JIIIIII ' + Object.keys(result3[0]));
+                    
+                } 
+            });
+        },
+        function(callback){
+            dbConn.collection("bikeRoutes").aggregate([
+                { $match: {'retStatID': id} },
+                { $group: { _id: null, n_ret: { $sum: 1 } } }
+             ])
+            .toArray(function(err, result4) {
+                if (err) {
+                    console.log(err);  
+                }
+                else {
+                   callback(err, result4);
+                    console.log('JIIIUUUIII ' + Object.keys(result4[0]));
+                    
+                } 
+            });
+        }
+
+        ],function(err,results){
+            if(err){
+                res.json({"status": "failed", "message": error.message})
+            }else{
             
-            
-        }) 
+                res.send(results); //both result1 and result2 will be in results
+            }
+    });
 
+
+
+    
+
+
+    
+
+}) 
             
     

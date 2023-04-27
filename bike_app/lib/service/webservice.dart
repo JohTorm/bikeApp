@@ -60,5 +60,24 @@ class Webservice {
     }
   }
 
+  getStationData(String id) async {
+    final response = await http.get(
+      Uri.parse('$ip/station/info$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      }
+    );
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      return jsonDecode(response.body);
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      throw Exception('Failed to create album.');
+
+    }
+  }
+
 
 }
