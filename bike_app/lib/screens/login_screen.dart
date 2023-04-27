@@ -30,7 +30,6 @@ class _LoginScreenState extends ViewState<LoginScreen, LoginScreenViewModel> {
     super.initState();
     listenToRoutesSpecs(viewModel.routes);
     btnController.stateStream.listen((value) {
-      print(value);
     });
   }
 
@@ -45,7 +44,7 @@ class _LoginScreenState extends ViewState<LoginScreen, LoginScreenViewModel> {
 
           return Scaffold(
               appBar: AppBar(
-                title: const Text('Bike route app'),
+                title: const Text('Bike Journey app'),
                 automaticallyImplyLeading: false,
               ),
               body: Center(
@@ -80,29 +79,12 @@ class _LoginScreenState extends ViewState<LoginScreen, LoginScreenViewModel> {
                             child: const Text('Load data'),
                             controller: btnController,
                             onPressed: () {
-                              print("""Hello ${state.loadOk}""");
                               setState(() {
                                 loading = !loading;
                               });
                               viewModel.login(context,nameController.text,passwordController.text);
                             },
                           )
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          const Text('New user?'),
-                          TextButton(
-                            child: const Text(
-                              'Sign up',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            onPressed: () {
-                              btnController.reset();
-                              viewModel.signup();
-                            },
-                          )
-                        ],
                       ),
                     ],
                   )

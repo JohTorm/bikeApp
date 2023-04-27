@@ -135,9 +135,7 @@ Future<void> getTableData(context,String month, String size, String pageNumber) 
 
   Future<void> displayDialogStation(context, station) async {
     Station asema = station;
-    print('ASEMA : ${asema.id}');
     final statioData = await Webservice().getStationData(asema.id);
-    print('TESTIOII   ${statioData[0][0]}');
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!

@@ -12,13 +12,9 @@ class Webservice {
     );
     if (response.statusCode == 200) {
       var sizeBikeJourneysMay = jsonDecode(response.body)["sizeBikeJourneyMay"];
-        print("TESTI ${sizeBikeJourneysMay}");
       var sizeBikeJourneysJune = jsonDecode(response.body)["sizeBikeJourneyJune"];
-      print("TESTI $sizeBikeJourneysJune");
       var sizeBikeJourneysJuly = jsonDecode(response.body)["sizeBikeJourneyJuly"];
-      print("TESTI $sizeBikeJourneysJuly");
       var sizeStationInfo = jsonDecode(response.body)["sizeStationInfo"];
-      print("TESTI $sizeStationInfo");
       return [sizeBikeJourneysMay,sizeBikeJourneysJune,sizeBikeJourneysJuly, sizeStationInfo];
     } else {
       // If the server did not return a 201 CREATED response,
@@ -34,7 +30,6 @@ class Webservice {
 
     );
     if (response.statusCode == 200) {
-      //print(response.body);
       return jsonDecode(response.body);
     } else {
       // If the server did not return a 201 CREATED response,
@@ -50,7 +45,6 @@ class Webservice {
 
     );
     if (response.statusCode == 200) {
-      //print(response.body);
       return jsonDecode(response.body);
     } else {
       // If the server did not return a 201 CREATED response,
@@ -69,7 +63,6 @@ class Webservice {
     );
 
     if (response.statusCode == 200) {
-      print(response.body);
       return jsonDecode(response.body);
     } else {
       // If the server did not return a 201 CREATED response,

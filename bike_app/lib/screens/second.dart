@@ -101,18 +101,18 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
 
                           PopupMenuItem<int>(
                             value: 1,
-                            child: Text("Create new group"),
+                            child: Text(""),
                           ),
 
                           PopupMenuItem<int>(
                             value: 4,
-                            child: Text("Join a group"),
+                            child: Text(""),
                           ),
 
 
                           PopupMenuItem<int>(
                             value: 2,
-                            child: Text("Settings"),
+                            child: Text(""),
                           ),
 
                           PopupMenuItem<int>(
@@ -123,24 +123,16 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                       },
                       onSelected:(value) async{
                         if(value == 0){
-                          print("My groups menu is selected.");
-
-
                         }
                         else if(value == 1){
                           await viewModel.getTableData(context, "5", "20", "1");
                           events.addAll(state.datarows);
-                          print(state.datarows[0].id + "  jee");
-                          print("Create new group menu is selected.");
                         }else if(value == 2){
-                          print("Settings menu is selected.");
                         }else if(value == 3){
                           viewModel.logOut();
-                          print("Logout menu is selected.");
                         }else if(value == 4){
 
 
-                          print("Logout menu is selected.");
                         }
                       }
                   ),
@@ -185,7 +177,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                         viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                         setState(() {
                                         });
-                                        print("My groups menu is selected.");
                                       }
                                       else if(value == 6){
                                         count = state.countJune;
@@ -194,7 +185,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                         viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                         setState(() {
                                         });
-                                        print("Create new group menu is selected.");
                                       }else if(value == 7){
                                         count = state.countJuly;
                                         month = 7;
@@ -202,7 +192,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                         viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                         setState(() {
                                         });
-                                        print("Settings menu is selected.");
                                       }
                                     }
                                 ),
@@ -252,10 +241,8 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                     viewModel.getTableData(context, month.toString(), "10", "1");
                                     page1 = 1;
                                     events.addAll(state.datarows);
-                                    print(count);
                                     setState(() {
                                     });
-                                    print(count);
 
                                   },
                                   icon: const Icon(Icons.first_page)),
@@ -285,7 +272,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   onPressed: () {
                                     events.clear();
                                     page1 = (state.countMay/10).ceil();
-                                    print("${page1}  AND  ${count % 10}");
                                     viewModel.getTableData(context, month.toString(), "10", page1.toString());
                                     events.addAll(state.datarows);
                                     setState(() {
@@ -324,7 +310,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                     ((element) => DataRow(
 
                                       onSelectChanged: (value) {
-                                        print('STATION ID : ${element.id}');
                                         viewModel.displayDialogStation(context, element);
                                       },
                                       cells: <DataCell>[
@@ -347,10 +332,8 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                     viewModel.getStationInfo(context,"10", "1");
 
                                     stations.addAll(state.stations);
-                                    print(count);
                                     setState(() {
                                     });
-                                    print(count);
 
                                   },
                                   icon: const Icon(Icons.first_page)),
@@ -382,7 +365,6 @@ class _SecondPageState extends ViewState<SecondPage, SecondPageViewModel> {
                                   onPressed: () {
                                     stations.clear();
                                     page2 = (state.stationLength/10).ceil();
-                                    print("${page2}  AND  ${state.stationLength % 10}");
                                     viewModel.getStationInfo(context,"10", page2.toString());
                                     stations.addAll(state.stations);
                                     setState(() {

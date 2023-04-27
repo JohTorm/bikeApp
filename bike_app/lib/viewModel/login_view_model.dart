@@ -42,7 +42,6 @@ class LoginScreenViewModel extends ViewModel {
 
     if(loadData.length > 0) {
      // updateState(loadData[0]);
-      print(loadData);
 
       _routesSubject.add(
         AppRouteSpec(

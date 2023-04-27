@@ -5,16 +5,10 @@ const mongodb = require('mongodb');
 const express = require('express')
 const app = express()
 const async = require('async')
-
 const csvMerger = require('csv-merger');
-
-
-
 var mongoUrl = "mongodb://localhost:27017/db";
-
 const fs = require('fs')
 
-const path = './testi.csv'
 
 var dbConn;
 
@@ -39,21 +33,15 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
     
 
         options = {
-            outputPath: "testi.csv", // string: path to the output CSV file
-            writeOutput: true, // boolean: if true, the output will be written to a file, otherwise will be returned by the function 
+            outputPath: "mergedCsv.csv", 
+            writeOutput: true, 
         }
 
         if(!fs.existsSync(path)) {
             try {
-                
-
-                await csvMerger.merge(["2021-05.csv"], options);
-                
-
-                
+                await csvMerger.merge(["2021-05.csv","2021-06.csv","2021-07.csv"], options);
                 console.log("merge Complete!")
                 
-
             } catch {
                 res.status(500).send()
             }
@@ -63,7 +51,6 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         
         try {
             var arrayToInsert = [];
-            console.log("123")
 
             await dbConn.listCollections().toArray(function(err, items)  {
                 items.forEach(element => {
@@ -76,7 +63,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                                     console.log(err);                                   
                                 }
                                 if (delOK){ 
-                                    console.log("Collection deleted 1");
+                                    console.log("Collection deleted");
                                 }
                               });
                             
@@ -93,8 +80,6 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
         await csvtojson()
                     .fromFile("bikestationdata.csv")
                     .then((jsonObj)=>{
-                        console.log(fileName);
-
                         for (var i = 0; i < jsonObj.length; i++) {
                             var oneRow = {
                                 id: jsonObj[i]["ID"],
@@ -110,28 +95,21 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                                 x: jsonObj[i]["x"],
                                 y: jsonObj[i]["y"],
                             };
-                            
                             arrayToInsert.push(oneRow);
                         }
     
                     })
                     
                     dbConn.collection("stationInfo");
-                    //inserting into the table "stationInfo"
-                    
                      dbConn.collection("stationInfo").insertMany(arrayToInsert, (err, result) => {
-                        console.log("TESTI TESTERIINO")
-
                         if (err) {
                             console.log(err);
-                            //return res.sendStatus(500);
-                            
+                            return res.sendStatus(500);
                         }
                     });
             
                     arrayToInsert = [];
 
-                
                     await dbConn.listCollections().toArray(function(err, items)  {
                         items.forEach(element => {
                             if(element.name == 'bikeRoutes') 
@@ -143,7 +121,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                                             console.log(err);                                   
                                         }
                                         if (delOK){ 
-                                            console.log("Collection deleted 2");
+                                            console.log("Collection deleted");
                                         }
                                       });
                                     
@@ -155,14 +133,12 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                   });  
                     
                  
-
             var collectionName = 'bikeRoutes';
             var collection = await dbConn.collection(collectionName);
 
                 await csvtojson()
                 .fromFile(fileName)
                 .then((jsonObj)=>{
-
                     for (var i = 0; i < jsonObj.length; i++) {
                         var oneRow = {
                             departure: jsonObj[i]["Departure"],
@@ -176,7 +152,6 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                         };
                         
 
-                        //Only add data with distance over 10m and duration over 10 sec
                         if(jsonObj[i]["Covered distance (m)"] > 9.5 && jsonObj[i]["Duration (sec)"] > 9.5) { 
                             arrayToInsert.push(oneRow);
                         }
@@ -184,27 +159,22 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
 
                 })
 
-                //inserting into the table "bikeRoutes"
                 collection.insertMany(arrayToInsert, async (err, result) => {
                     if (err) {
                         console.log(err);
-                        //return res.sendStatus(500);
+                        return res.sendStatus(500);
                         
                     }
                     if(result){
-                        console.log("Import CSV into database successfully. 1");
+                        console.log("Import CSV into database successfully.");
                         
                         const sizeMay = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-05/]}});
-                        console.log(sizeMay);
 
                         const sizeJune = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-06/]}});
-                        console.log(sizeJune);
 
                         const sizeJuly = await dbConn.collection("bikeRoutes").countDocuments({"departure": {$in:[/2021-07/]}});
-                        console.log(sizeJuly);
 
                         const sizeStation = await dbConn.collection("stationInfo").countDocuments();
-                        console.log(sizeStation);
 
                         res.json({
                             sizeBikeJourneyMay : sizeMay,
@@ -239,15 +209,12 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
             var query =  { "departure": {$in:[new RegExp(month)]} };
             var sorting = { "departure": 1};
             
-            console.log(query);
             await dbConn.collection("bikeRoutes").find(query).skip(size * (pageNumber - 1)).sort(sorting).limit(size).allowDiskUse(true).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
-                    
                 }
                 try {
                     res.json(result);
-                    console.log("sent! " );
                 } catch {
                     res.status(500).send()
                 }
@@ -261,14 +228,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
 
         app.get("/bikeRoutes/size", async (req, res) => {
             
-            /*
-            await dbConn.collection("bikeRoutes").count({}, function(error, numOfDocs) {
-                res.json().append({
-                    sizeBikeRoutes: numOfDocs
-                }); 
-                
-            });
-            */
+            
             async.parallel([
                 function(callback){
                     dbConn.collection("bikeRoutes").count({}, function(error, result1) {
@@ -285,7 +245,7 @@ app.get('/bikeRoutes/load', async (req, res, next) => {
                     if(err){
                         res.json({"status": "failed", "message": error.message})
                     }else{
-                        res.send(results); //both result1 and result2 will be in results
+                        res.send(results);
                     }
             });
                     
@@ -313,17 +273,13 @@ app.get('/station/:size-:pageNumber', async (req, res) => {
     var sorting = { "id": 1};
 
     try {
-        var arrayToInsert = [];
-        console.log("123")
-        
+        var arrayToInsert = [];        
         var fileName = "bikestationdata";
-
         await dbConn.listCollections().toArray(function(err, items) {
             items.forEach(element => {
                 if(element.name == 'stationInfo') 
                 { 
                     try {
-                        //delete 'stationInfo' collection if exists
                         dbConn.dropCollection("stationInfo", function(err, delOK) {
                             if (err) {
                                 console.log(err);      
@@ -335,9 +291,7 @@ app.get('/station/:size-:pageNumber', async (req, res) => {
                             });
                         
                     } catch {
-                        // res.status(500).send()
-                        console.log("1233")
-
+                        res.status(500).send()
                     }
                 }
             })
@@ -349,13 +303,9 @@ app.get('/station/:size-:pageNumber', async (req, res) => {
     var collectionName = 'stationInfo';
     var collection = await dbConn.collection(collectionName);
 
-    console.log(fileName);
-
     await csvtojson()
     .fromFile("bikestationdata.csv")
     .then((jsonObj)=>{
-        console.log(fileName);
-
         for (var i = 0; i < jsonObj.length; i++) {
             var oneRow = {
                 id: jsonObj[i]["ID"],
@@ -376,11 +326,10 @@ app.get('/station/:size-:pageNumber', async (req, res) => {
 
     })
 
-    //inserting into the table "stationInfo"
     collection.insertMany(arrayToInsert, (err, result) => {
     if (err) {
         console.log(err);
-        //return res.sendStatus(500);
+        return res.sendStatus(500);
         
     }
     if(result){
@@ -392,7 +341,6 @@ app.get('/station/:size-:pageNumber', async (req, res) => {
             }
             try {
                 res.json(result);
-                console.log("sent! " );
             } catch {
                 res.status(500).send()
             }
@@ -405,13 +353,6 @@ app.get('/station/info:id', async (req, res) => {
     
     let id = req.params.id
 
-    console.log(id);
-    
-    
-    
-    const countDep = await dbConn.collection("bikeRoutes").countDocuments({'depStatID': id});
-    const countRet = await dbConn.collection("bikeRoutes").countDocuments({'retStatID': id});
-    
      avgDistance = 0;
     await dbConn.collection("bikeRoutes").aggregate([
         {
@@ -425,8 +366,6 @@ app.get('/station/info:id', async (req, res) => {
             console.log(err);  
         }
         try {
-           // res.json(result);
-            console.log('JII ' + result[0]["avg_val"]);
             avgDistance = result[0]["avg_val"];
         } catch {
             res.status(500).send()
@@ -446,16 +385,11 @@ app.get('/station/info:id', async (req, res) => {
             console.log(err);  
         }
         try {
-           // res.json(result);
-            console.log('JII ' + result[0]["avg_val"]);
             avgDuration = result[0]["avg_val"];
         } catch {
             res.status(500).send()
         }
     })
-
-    console.log(avgDuration + ' ' + avgDistance);
-
     async.parallel([
         function(callback){
             dbConn.collection("bikeRoutes").aggregate([
@@ -475,9 +409,7 @@ app.get('/station/info:id', async (req, res) => {
                     console.log(err);  
                 }
                 else {
-                   callback(err, result1);
-                    console.log('JII ' + result1[0]["avg_dist_dep"]);
-                    
+                   callback(err, result1);                    
                 } 
             })
         },
@@ -499,9 +431,7 @@ app.get('/station/info:id', async (req, res) => {
                     console.log(err);  
                 }
                 else {
-                   callback(err, result2);
-                    console.log('JII ' + result2[0]["avg_dist_ret"]);
-                    
+                   callback(err, result2);                    
                 } 
             })
         },
@@ -515,9 +445,7 @@ app.get('/station/info:id', async (req, res) => {
                     console.log(err);  
                 }
                 else {
-                   callback(err, result3);
-                    console.log('JIIIIII ' + Object.keys(result3[0]));
-                    
+                   callback(err, result3);                    
                 } 
             });
         },
@@ -531,9 +459,7 @@ app.get('/station/info:id', async (req, res) => {
                     console.log(err);  
                 }
                 else {
-                   callback(err, result4);
-                    console.log('JIIIUUUIII ' + Object.keys(result4[0]));
-                    
+                   callback(err, result4);                    
                 } 
             });
         }
@@ -543,17 +469,9 @@ app.get('/station/info:id', async (req, res) => {
                 res.json({"status": "failed", "message": error.message})
             }else{
             
-                res.send(results); //both result1 and result2 will be in results
+                res.send(results); 
             }
     });
-
-
-
-    
-
-
-    
-
 }) 
             
     

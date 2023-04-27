@@ -30,7 +30,6 @@ class AppRouter {
         final stationLength = arguments['stationLength'] as int;
 
 
-        print(countMay);
         if (countMay == null) {
           throw Exception('Route ${settings.name} requires a count');
         }
